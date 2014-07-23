@@ -186,7 +186,7 @@ class WebhookController extends \PHPCI\Controller
                     'pull_request_id' => $payload['pull_request']['id'],
                     'pull_request_number' => $payload['number'],
                     'remote_branch' => $payload['pull_request']['head']['ref'],
-                    'remote_url' => $payload['pull_request']['head']['repo']['clone_url'],
+                    'remote_url' => $payload['pull_request']['head']['repo']['ssh_url'],
                 );
 
                 $this->createBuild($projectId, $commit['sha'], $branch, $committer, $message, $extra);

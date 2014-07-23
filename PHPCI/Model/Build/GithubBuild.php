@@ -88,11 +88,7 @@ class GithubBuild extends RemoteGitBuild
     {
         $key = trim($this->getProject()->getSshPrivateKey());
 
-        if (!empty($key)) {
-            return 'git@github.com:' . $this->getProject()->getReference() . '.git';
-        } else {
-            return 'https://github.com/' . $this->getProject()->getReference() . '.git';
-        }
+        return 'git@github.com:' . $this->getProject()->getReference() . '.git';
     }
 
     public function getCommitMessage()
