@@ -77,12 +77,6 @@ class RemoteGitBuild extends Build
     */
     protected function cloneBySsh(Builder $builder, $cloneTo)
     {
-        $keyFile = $this->writeSshKey($cloneTo);
-
-        if (!IS_WIN) {
-            $gitSshWrapper = $this->writeSshWrapper($cloneTo, $keyFile);
-        }
-
         // Do the git clone:
         $cmd = 'git clone ';
 
@@ -94,20 +88,10 @@ class RemoteGitBuild extends Build
 
         $cmd .= ' -b %s %s "%s"';
 
-        if (!IS_WIN) {
-            $cmd = 'export GIT_SSH="'.$gitSshWrapper.'" && ' . $cmd;
-        }
-
         $success = $builder->executeCommand($cmd, $this->getBranch(), $this->getCloneUrl(), $cloneTo);
 
         if ($success) {
             $success = $this->postCloneSetup($builder, $cloneTo);
-        }
-
-        // Remove the key file and git wrapper:
-        unlink($keyFile);
-        if (!IS_WIN) {
-            unlink($gitSshWrapper);
         }
 
         return $success;
@@ -151,29 +135,4 @@ class RemoteGitBuild extends Build
         return $keyFile;
     }
 
-    /**
-     * Create an SSH wrapper script for Git to use, to disable host key checking, etc.
-     * @param $cloneTo
-     * @param $keyFile
-     * @return string
-     */
-    protected function writeSshWrapper($cloneTo, $keyFile)
-    {
-        $path = dirname($cloneTo . '/temp');
-        $wrapperFile = $path . '.sh';
-
-        $sshFlags = '-o CheckHostIP=no -o IdentitiesOnly=yes -o StrictHostKeyChecking=no -o PasswordAuthentication=no';
-
-        // Write out the wrapper script for this build:
-        $script = <<<OUT
-#!/bin/sh
-ssh {$sshFlags} -o IdentityFile={$keyFile} $*
-
-OUT;
-
-        file_put_contents($wrapperFile, $script);
-        shell_exec('chmod +x "'.$wrapperFile.'"');
-
-        return $wrapperFile;
-    }
 }
